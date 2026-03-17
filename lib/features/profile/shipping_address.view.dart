@@ -1,64 +1,118 @@
 import 'package:flutter/material.dart';
 import 'package:fluxy/fluxy.dart';
 
+import '../../features/home/home.controller.dart';
+
 class ShippingAddressView extends StatelessWidget {
-  const ShippingAddressView({super.key});
+  final HomeController controller;
+  const ShippingAddressView({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return Fx.scaffold(
-      backgroundColor: Colors.grey.shade50,
+    return Fx(
+      () => Fx.scaffold(
+        backgroundColor: controller.surface,
       appBar: Fx.appBar(
         title: 'Shipping Addresses',
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black87,
+          foregroundColor: controller.text,
         elevation: 0,
       ),
       body: Fx.col(
         alignItems: CrossAxisAlignment.start,
         children: [
-          _buildAddressCard('Home', '123 Fluxy Street, San Francisco, CA 94105', true),
-          Fx.gap(16),
-          _buildAddressCard('Work', '456 Tech Avenue, San Jose, CA 95113', false),
-          Fx.gap(32),
+            ...controller.addresses.value.map((address) {
+              final isSelected =
+                  controller.selectedAddressId.value == address.id;
+              return _buildAddressCard(address, isSelected).mb(20);
+            }),
+            Fx.gap(20),
 
           Fx.box()
             .wFull().py(18)
             .bg.transparent
-            .border(color: Colors.black87, width: 2)
+                .border(color: controller.text, width: 2)
             .rounded(16)
             .pointer()
             .center()
-            .child(Fx.text('+ Add New Address').font.lg().bold().color(Colors.black87))
-            .onTap(() {}),
+                .child(
+                  Fx.text(
+                    '+ Add New Address',
+                  ).font.lg().bold().color(controller.text),
+                )
+                .onTap(() {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Add Address UI placeholder.'),
+                    ),
+                  );
+                }),
         ],
       ).p(24).scrollable(),
+      ),
     );
   }
 
-  Widget _buildAddressCard(String title, String address, bool isDefault) {
+  Widget _buildAddressCard(Address address, bool isSelected) {
     return Fx.col(
       alignItems: CrossAxisAlignment.start,
       children: [
         Fx.row(
           justify: MainAxisAlignment.spaceBetween,
           children: [
-            Fx.text(title).font.lg().bold().color(Colors.black87).expanded(),
-            if (isDefault)
+                Fx.text(
+                  address.label,
+                ).font.lg().bold().color(controller.text).expanded(),
+                if (address.isDefault)
               Fx.box().bg(Colors.green.shade100).rounded(8).px(8).py(4).child(
                 Fx.text('Default').font.xs().bold().color(Colors.green.shade800)
               ),
           ],
         ).pb(8),
-        Fx.text(address).font.md().muted().pb(16),
+            Fx.text(
+              address.fullAddress,
+            ).font.md().color(controller.textMuted).pb(16),
         Fx.row(
           children: [
-            Fx.text('Edit').font.sm().bold().color(Colors.blueAccent).pointer().onTap((){}),
+                Fx.text('Select').font
+                    .sm()
+                    .bold()
+                    .color(isSelected ? Colors.green : Colors.blueAccent)
+                    .pointer()
+                    .onTap(() {
+                      controller.selectedAddressId.value = address.id;
+                      Fluxy.back();
+                    }),
+                Fx.gap(16),
+                Fx.text('Edit').font
+                    .sm()
+                    .bold()
+                    .color(controller.textMuted)
+                    .pointer()
+                    .onTap(() {}),
             Fx.gap(16),
             Fx.text('Delete').font.sm().bold().color(Colors.redAccent).pointer().onTap((){}),
           ],
         )
       ],
-    ).p(16).bg.white.rounded(16).shadowSmall().wFull();
+        )
+        .p(16)
+        .bg(
+          isSelected ? Colors.blueAccent.withOpacity(0.05) : controller.surface,
+        )
+        .rounded(16)
+        .border(
+          color: isSelected
+              ? Colors.blueAccent
+              : (controller.isDarkMode.value
+                    ? Colors.white12
+                    : Colors.grey.shade200),
+          width: isSelected ? 2 : 1,
+        )
+        .wFull()
+        .pointer()
+        .onTap(() {
+          controller.selectedAddressId.value = address.id;
+        });
   }
 }

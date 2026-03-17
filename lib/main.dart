@@ -5,6 +5,8 @@ import 'core/registry/fluxy_registry.dart';
 import 'features/home/home.routes.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
   // 1. Initialize Framework & Stability Policy
   // strictMode: true throws errors on layout violations (perfect for Dev)
   // strictMode: false (Relaxed) auto-fixes violations (perfect for Prod)
@@ -19,12 +21,17 @@ void main() async {
     debugPrint("Fluxy Global Error: $error");
   });
 
+  // Load saved theme securely from FluxyVault
+  final isDarkString = await FluxyVault.read('isDark');
+  final isDarkSaved = isDarkString == 'true';
+
   runApp(
     Fluxy.debug(
       child: FluxyApp(
         title: 'Fluxy App',
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
+        themeMode: isDarkSaved ? ThemeMode.dark : ThemeMode.light,
         initialRoute: homeRoutes.first.path,
         routes: homeRoutes,
       ),

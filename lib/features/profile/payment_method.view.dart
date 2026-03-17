@@ -1,41 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:fluxy/fluxy.dart';
 
+import '../../features/home/home.controller.dart';
+
 class PaymentMethodView extends StatelessWidget {
-  const PaymentMethodView({super.key});
+  final HomeController controller;
+  const PaymentMethodView({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return Fx.scaffold(
-      backgroundColor: Colors.grey.shade50,
+    return Fx(() => Fx.scaffold(
+      backgroundColor: controller.surface,
       appBar: Fx.appBar(
         title: 'Payment Methods',
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.black87,
+        foregroundColor: controller.text,
         elevation: 0,
       ),
       body: Fx.col(
         alignItems: CrossAxisAlignment.start,
         children: [
-          _buildCardInfo('Visa', '**** **** **** 4242', '12/25', true),
+          ...controller.paymentCards.value.map((payment) {
+            final isSelected = controller.selectedPaymentId.value == payment.id;
+            return _buildCardInfo(payment, isSelected).mb(20);
+          }),
           Fx.gap(16),
-          _buildCardInfo('Mastercard', '**** **** **** 5555', '08/26', false),
-          Fx.gap(32),
           Fx.box()
             .wFull().py(18)
             .bg.transparent
-            .border(color: Colors.black87, width: 2)
+            .border(color: controller.text, width: 2)
             .rounded(16)
             .pointer()
             .center()
-            .child(Fx.text('+ Add Payment Method').font.lg().bold().color(Colors.black87))
-            .onTap(() {}),
+            .child(Fx.text('+ Add Payment Method').font.lg().bold().color(controller.text))
+            .onTap(() {
+               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Add Card UI placeholder.')));
+            }),
         ],
       ).p(24).scrollable(),
-    );
+    ));
   }
 
-  Widget _buildCardInfo(String type, String number, String exp, bool isDefault) {
+  Widget _buildCardInfo(PaymentCard card, bool isSelected) {
     return Fx.col(
       alignItems: CrossAxisAlignment.start,
       children: [
@@ -44,20 +50,24 @@ class PaymentMethodView extends StatelessWidget {
           children: [
             Fx.row(
               children: [
-                const Icon(Icons.credit_card, color: Colors.black87),
+                Icon(card.iconType == 'visa' ? Icons.credit_card : Icons.credit_card_outlined, color: controller.text),
                 Fx.gap(12),
-                Fx.text(type).font.lg().bold().color(Colors.black87),
+                Fx.text(card.bank).font.lg().bold().color(controller.text),
               ],
             ).expanded(),
-            if (isDefault)
-              Fx.box().bg(Colors.blue.shade100).rounded(8).px(8).py(4).child(
-                Fx.text('Default').font.xs().bold().color(Colors.blue.shade800)
-              ),
+            Fx.box().bg(isSelected ? Colors.blueAccent : Colors.transparent).rounded(8).px(12).py(6).border(color: isSelected ? Colors.transparent : controller.textMuted).pointer().onTap((){
+               controller.selectedPaymentId.value = card.id;
+               Fluxy.back();
+            }).child(
+              Fx.text(isSelected ? 'Selected' : 'Select').font.xs().bold().color(isSelected ? Colors.white : controller.textMuted)
+            ),
           ],
         ).pb(12),
-        Fx.text(number).font.xl().medium().color(Colors.black87).pb(4),
-        Fx.text('Expires $exp').font.sm().muted(),
+        Fx.text('**** **** **** ${card.last4}').font.xl().medium().color(controller.text).pb(4),
+        Fx.text('Expires 12/26').font.sm().color(controller.textMuted),
       ],
-    ).p(20).bg.white.rounded(16).shadowSmall().wFull();
+    ).p(20).bg(isSelected ? Colors.blueAccent.withOpacity(0.05) : controller.surface).rounded(16).border(color: isSelected ? Colors.blueAccent : (controller.isDarkMode.value ? Colors.white12 : Colors.grey.shade200), width: isSelected ? 2 : 1).wFull().pointer().onTap((){
+       controller.selectedPaymentId.value = card.id;
+    });
   }
 }

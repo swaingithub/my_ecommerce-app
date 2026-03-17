@@ -8,15 +8,18 @@ class PersonalInfoView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Fx(() => Fx.scaffold(
-      backgroundColor: controller.isDarkMode.value ? const Color(0xFF121212) : Colors.grey.shade50,
-      appBar: Fx.appBar(
-        title: 'Personal Info',
-        backgroundColor: Colors.transparent,
-        foregroundColor: controller.text,
-        elevation: 0,
-        centerTitle: false,
-      ),
+    return Fx(() {
+      final isDark = controller.isDarkMode.value;
+      
+      return Fx.scaffold(
+        backgroundColor: isDark ? const Color(0xFF121212) : Colors.grey.shade50,
+        appBar: Fx.appBar(
+          title: 'Personal Info',
+          backgroundColor: Colors.transparent,
+          foregroundColor: controller.text,
+          elevation: 0,
+          centerTitle: false,
+        ),
       body: Fx.col(
         alignItems: CrossAxisAlignment.start,
         children: [
@@ -51,7 +54,7 @@ class PersonalInfoView extends StatelessWidget {
                     .p(8)
                     .bg(Colors.blueAccent)
                     .circle()
-                    .border(color: controller.surface, width: 3)
+                    .border(color: isDark ? const Color(0xFF121212) : Colors.grey.shade50, width: 3)
                     .child(const Icon(Icons.camera_alt, size: 14, color: Colors.white))
                     .pointer()
                 ),
@@ -64,14 +67,16 @@ class PersonalInfoView extends StatelessWidget {
             signal: controller.userName,
             placeholder: 'Enter your name',
             icon: Icons.person_outline,
-          ).bg(controller.surface).border(color: controller.isDarkMode.value ? Colors.grey.shade800 : Colors.grey.shade200).shadowSmall().rounded(16).mb(24),
+          ).bg(isDark ? const Color(0xFF1E1E1E) : Colors.white)
+           .border(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200).shadowSmall().rounded(16).mb(24),
           
           Fx.text('Email').font.md().bold().color(controller.text).pb(8),
           Fx.input(
             signal: controller.userEmail,
             placeholder: 'Enter your email',
             icon: Icons.email_outlined,
-          ).bg(controller.surface).border(color: controller.isDarkMode.value ? Colors.grey.shade800 : Colors.grey.shade200).shadowSmall().rounded(16).mb(32),
+          ).bg(isDark ? const Color(0xFF1E1E1E) : Colors.white)
+           .border(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200).shadowSmall().rounded(16).mb(32),
 
           Fx.box()
             .wFull().py(18)
@@ -82,13 +87,14 @@ class PersonalInfoView extends StatelessWidget {
             .center()
             .child(Fx.text('Save Changes').font.lg().bold().color(Colors.white))
             .onTap(() {
-              Navigator.pop(context);
+              Fluxy.back();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Changes saved successfully!'), backgroundColor: Colors.green)
               );
             }),
         ],
       ).p(24).scrollable(),
-    ));
+      );
+    });
   }
 }
